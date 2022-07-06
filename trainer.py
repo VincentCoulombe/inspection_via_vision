@@ -25,7 +25,7 @@ class SegmentationTrainer():
         if self.device == torch.device("cuda:0"):
             memoire_disponible = round(torch.cuda.max_memory_reserved()*1e-9,3)
             memoire_utilisee = round(torch.cuda.max_memory_allocated()*1e-9,3)
-            print(f"{memoire_utilisee * 100 / memoire_disponible}% de la mémoire GPU est utilisée.")
+            print(f"{memoire_utilisee * 100 / memoire_disponible:.02f}% de la mémoire GPU est utilisée.")
         
     def fit(self, metrics: Dict[str, Any], save_dir: str = "", save_name: str = "default_name.pt", log_dir: str = "",
             log_name: str = "log.csv") -> nn.Module:
@@ -33,7 +33,7 @@ class SegmentationTrainer():
 
         start = time.perf_counter()
         best_model_weights = copy.deepcopy(self.model.state_dict())
-        best_loss = 0
+        best_loss = 1
         metric_names = ["Train_loss", "Val_loss"] + [f"Train_{name}" for name in metrics] +\
                         [f"Val_{name}" for name in metrics]
         if log_dir != "":
