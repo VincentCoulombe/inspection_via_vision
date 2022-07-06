@@ -44,8 +44,11 @@ class ToTensor(object):
 
     def __call__(self, sample):
         image, mask = sample['image'], sample['mask']
+        print(image.shape)
         image = torch.from_numpy(image.reshape((1,) + image.shape))
+        print(image.shape)
         image = image.expand(3, *image.shape[1:]) # LargeMobileNet prend 3 channels en entrée
+        print(image.shape)
         mask = torch.from_numpy(mask.reshape((1, )+mask.shape))
         return {'image': image, 'mask': mask}
 

@@ -11,8 +11,8 @@ class CsvLogger:
         self.columns_names = columns_names
         os.makedirs(log_dir, exist_ok=True)
         with open(os.path.join(log_dir, log_name), "w", newline="") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=self.columns_names)
-            writer.writeheader()
+            writer = csv.writer(csvfile)
+            writer.writerow(self.columns_names)
 
 
     def log(self, row: dict) -> None:
