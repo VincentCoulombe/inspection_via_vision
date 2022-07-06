@@ -13,8 +13,8 @@ from logger import CsvLogger
 class SegmentationTrainer():
     def __init__(self, model: nn.Module, lr: float, epochs: int, batch_size: int, dataloaders: Dict[str, DataLoader]) -> None:
         
-        self.model = model
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.model = model.to(self.device)
         self.epochs = epochs
         self.batch_size = batch_size
         self.dataloaders = dataloaders # {"Train": train_loader, "Val": val_loader}

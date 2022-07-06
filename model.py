@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.models.segmentation.deeplabv3 import DeepLabHead
 from torchvision.models.segmentation import deeplabv3_mobilenet_v3_large, DeepLabV3_MobileNet_V3_Large_Weights
-from torchvision import models
 import cv2
 import matplotlib.pyplot as plt
 import os
