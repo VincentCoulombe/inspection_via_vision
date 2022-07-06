@@ -18,7 +18,7 @@ class CsvLogger:
     def log(self, row: dict) -> None:
         
         if any(name not in self.columns_names for name in row):
-            raise ValueError(f"Il manque un champs dans la ligne à logger: {row}.")
+            raise ValueError(f"{row} ne map pas avec les noms des colonnes : {self.columns_names}.")
         
         with open(os.path.join(self.log_dir, self.log_name), "w", newline="") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.columns_names)

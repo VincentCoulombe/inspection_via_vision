@@ -30,23 +30,23 @@ class SegmentationTrainer():
     def fit(self, metrics: Dict[str, Any], save_dir: str = "", save_name: str = "default_name.pt", log_dir: str = "",
             log_name: str = "log.csv") -> nn.Module:
         # sourcery skip: low-code-quality
-        
+
         start = time.perf_counter()
         best_model_weights = copy.deepcopy(self.model.state_dict())
         best_loss = 0
-        metric_names = ["Epoch", "Train_loss", "Val_loss"] + [f"Train_{name}" for name in metrics.keys] +\
-                        [f"Val_{name}" for name in metrics.keys]
+        metric_names = ["Train_loss", "Val_loss"] + [f"Train_{name}" for name in metrics] +\
+                        [f"Val_{name}" for name in metrics]
         if log_dir != "":
-            logger = CsvLogger(log_dir, log_name, metric_names)
+            logger = CsvLogger(log_dir, log_name, ["Epoch", *metric_names]) # Init les colonnes du csv
 
         for epoch in range(self.epochs):
-            
+
             print(f"\nEpoch {epoch}/{self.epochs - 1}")
             print("-" * 10)
             epoch_metrics = {name: [] for name in metric_names}
             # Each epoch has a training and validation phase
             for phase in ["Train", "Val"]:
-                
+
                 # Setuper le model en fonction de la phase
                 self.model.train() if phase == "Train" else self.model.eval()
 
@@ -61,19 +61,21 @@ class SegmentationTrainer():
                     # forward
                     # track history if only in train
                     with torch.set_grad_enabled(phase == "Train"):
-                        outputs = self.model(inputs)
+                        outputs = self.model(inputs)["out"]
                         loss = self.criterion(outputs, masks)
                         epoch_metrics[f"{phase}_loss"].append(loss.item())
-                        readable_preds = outputs.detach().cpu().numpy().ravel()
+                        readable_preds = outputs.detach().cpu().numpy().ravel().astype("uint8")
                         readable_labels = masks.detach().cpu().numpy().ravel()
                         for metric_name, metric_func in metrics.items():
-                            epoch_metrics[f"{phase}_{metric_name}"].append(metric_func(readable_preds, readable_labels))                        
+                            if metric_name == "Intersection_Over_Union":
+                                epoch_metrics[f"{phase}_{metric_name}"].append(metric_func(readable_preds, readable_labels, num_classes=2))                        
                         # backward + optimize only if in training phase
                         if phase == "Train":
                             loss.backward()
                             self.optimizer.step()
 
-                epoch_metrics_avgs = {np.mean(metric) for metric in epoch_metrics}
+                epoch_metrics_avgs = {metric_name: sum(metric)/len(metric) if len(metric) > 0 else 0 for
+                                      metric_name, metric in epoch_metrics.items()}
                 avg_loss = epoch_metrics_avgs[f"{phase}_loss"]
                 print(f"{phase} Loss: {avg_loss:.4f}")
                 self._print_memory_usage()

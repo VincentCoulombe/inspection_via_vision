@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.models.segmentation.deeplabv3 import DeepLabHead
-from torchvision.models.segmentation import DeepLabV3_MobileNet_V3_Large_Weights
+from torchvision.models.segmentation import deeplabv3_mobilenet_v3_large, DeepLabV3_MobileNet_V3_Large_Weights
 from torchvision import models
 import cv2
 import matplotlib.pyplot as plt
@@ -12,10 +12,8 @@ import os
 class LargeMobileNet(nn.Module):
     def __init__(self, output_channels: int = 1):
         super(LargeMobileNet, self).__init__()
-        # model = DeepLabV3_MobileNet_V3_Large_Weights(pretrained=True, progress=True)
-        model = models.segmentation.deeplabv3_resnet101(pretrained=True,
-                                                    progress=True)
-        model.classifier = DeepLabHead(2048, output_channels)
+        self.model = deeplabv3_mobilenet_v3_large(weights=DeepLabV3_MobileNet_V3_Large_Weights.DEFAULT)
+        self.model.classifier = DeepLabHead(960, output_channels)
 
     def forward(self, x):
         return self.model(x)

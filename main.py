@@ -1,6 +1,7 @@
 import click
 import os
-import torch.nn
+from torchmetrics.functional import jaccard_index
+from sklearn.metrics import roc_auc_score
 
 from trainer import *
 from datahandler import *
@@ -16,10 +17,9 @@ from model import *
 def main(lr: float, batch_size: int, epochs: int, save_dir: str, data_dir: str, weights_saving_name: str):
     
 	model = LargeMobileNet()
-	print(data_dir)
 	dataloaders = segmentation_dataset(data_dir, batch_size)
 	trainer = SegmentationTrainer(model, lr, epochs, batch_size, dataloaders)
-	trainer.fit(save_dir, weights_saving_name, r"./logs", "log.csv")
+	trainer.fit({"Intersection_Over_Union": jaccard_index}, save_dir, weights_saving_name, r"./logs", "log.csv")
 	model.predict(".", "1_0002.PNG")
 	model.predict(".", "1_0003.PNG")
     

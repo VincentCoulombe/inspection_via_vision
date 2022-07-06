@@ -44,36 +44,30 @@ class ToTensor(object):
 
     def __call__(self, sample):
         image, mask = sample['image'], sample['mask']
-        image = image.reshape((1,)+image.shape)
-        mask = cv2.resize(mask,(128,128),cv2.INTER_AREA)
-        mask = mask.reshape((1,)+mask.shape)
-        return {'image': torch.from_numpy(image),
-                'mask': torch.from_numpy(mask)}
+        image = torch.from_numpy(image.reshape((1,) + image.shape))
+        image = image.expand(3, *image.shape[1:]) # LargeMobileNet prend 3 channels en entrée
+        mask = torch.from_numpy(mask.reshape((1, )+mask.shape))
+        return {'image': image, 'mask': mask}
 
 
 class Normalize(object):
     #Normalize image
     def __call__(self,sample):
         image, mask = sample['image'], sample['mask']
-        return {'image': image.type(torch.FloatTensor)/255,
-                'mask': mask.type(torch.FloatTensor)/255}
+        return {'image': image.type(torch.FloatTensor)/255, 'mask': mask.type(torch.FloatTensor)/255}
 
 
 
 def segmentation_dataset(data_dir = '../Class8/', batch_size: int = 32):
     #Returns the dataset for segmentation
     data_transforms = {
-        'Train': transforms.Compose([ToTensor(),Normalize()]), #TODO Ajouter de l'augmentation
-        'Test': transforms.Compose([ToTensor(),Normalize()]),
+        "Train": transforms.Compose([ToTensor(),Normalize()]), #TODO Ajouter de l'augmentation
+        "Val": transforms.Compose([ToTensor(),Normalize()]),
     }
 
     image_datasets = {x: DAGMDataset(os.path.join(data_dir, x),
                                               data_transforms[x])
-                      for x in ['Train', 'Test']}
-    dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size,
-                                                 shuffle=True, num_workers=1)
-                  for x in ['Train', 'Test']}
-    dataset_sizes = {x: len(image_datasets[x]) for x in ['Train', 'Test']}
-    return dataloaders
+                      for x in ["Train", "Val"]}
+    return {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=1) for x in ["Train", "Val"]}
 
 
