@@ -3,7 +3,8 @@ import cv2
 import os
 import numpy as np 
 
-def iou(outputs: torch.Tensor, labels: torch.Tensor) -> float:
+def iou(outputs: np.array, labels: np.array) -> float:
+    outputs, labels = torch.from_numpy(outputs), torch.from_numpy(labels)
     intersection = torch.logical_and(labels, outputs)
     union = torch.logical_or(labels, outputs)
     return float(torch.sum(intersection) / torch.sum(union))

@@ -68,8 +68,7 @@ class SegmentationTrainer():
                         readable_labels = masks.detach().cpu().numpy().ravel()
                         for metric_name, metric_func in metrics.items():
                             if metric_name == "Intersection_Over_Union":
-                                epoch_metrics[f"{phase}_{metric_name}"].append(metric_func(torch.from_numpy(readable_preds),
-                                                                                           torch.from_numpy(readable_labels)))                        
+                                epoch_metrics[f"{phase}_{metric_name}"].append(metric_func(readable_preds, readable_labels))
                         # backward + optimize only if in training phase
                         if phase == "Train":
                             loss.backward()
@@ -90,7 +89,7 @@ class SegmentationTrainer():
                     # Sauvegarder les poids du meilleur modèle
                     if save_dir != "":
                         os.makedirs(save_dir, exist_ok=True)
-                        torch.save(best_model_weights, os.path.join(save_dir,save_name))
+                        torch.save(best_model_weights, os.path.join(save_dir,  save_name))
 
         duree = time.perf_counter() - start
         print(f"Durée du Training {duree//60:.0f} min {duree%60:.0f} s")
